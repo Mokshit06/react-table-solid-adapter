@@ -1,4 +1,4 @@
-import { Component, createSignal } from 'solid-js';
+import { Component, createSignal, For } from 'solid-js';
 import './App.css';
 import { createCoreTable, createTable, paginateRowsFn } from './solid-table';
 
@@ -92,25 +92,32 @@ function Table(props: { columns: any[]; data: any[] }) {
       </pre>
       <table {...instance.getTableProps()}>
         <thead>
-          {instance.getHeaderGroups().map(headerGroup => (
-            <tr {...headerGroup.getHeaderGroupProps()}>
-              {headerGroup.headers.map(column => (
-                <th {...column.getHeaderProps()}>{column.renderHeader()}</th>
-              ))}
-            </tr>
-          ))}
+          <For each={instance.getHeaderGroups()}>
+            {headerGroup => (
+              <tr {...headerGroup.getHeaderGroupProps()}>
+                <For each={headerGroup.headers}>
+                  {column => (
+                    <th {...column.getHeaderProps()}>
+                      {column.renderHeader()}
+                    </th>
+                  )}
+                </For>
+              </tr>
+            )}
+          </For>
         </thead>
         <tbody {...instance.getTableBodyProps()}>
-          {instance.getPaginationRowModel().rows.map((row, i) => {
-            // prepareRow(row)
-            return (
+          <For each={instance.getPaginationRowModel().rows}>
+            {(row, i) => (
               <tr {...row.getRowProps()}>
-                {row.getAllCells().map(cell => {
-                  return <td {...cell.getCellProps()}>{cell.renderCell()}</td>;
-                })}
+                <For each={row.getAllCells()}>
+                  {cell => (
+                    <td {...cell.getCellProps()}>{cell.renderCell()}</td>
+                  )}
+                </For>
               </tr>
-            );
-          })}
+            )}
+          </For>
         </tbody>
       </table>
       {/* 
@@ -131,10 +138,7 @@ function Table(props: { columns: any[]; data: any[] }) {
           {'<'}
         </button>{' '}
         <button
-          onClick={() => {
-            console.log('CLICKED');
-            instance.nextPage();
-          }}
+          onClick={() => instance.nextPage()}
           disabled={!instance.getCanNextPage()}
         >
           {'>'}
@@ -145,24 +149,23 @@ function Table(props: { columns: any[]; data: any[] }) {
         >
           {'>>'}
         </button>{' '}
-        {/* <span>
+        <span>
           Page{' '}
           <strong>
-            {instance. + 1} of {pageOptions.length}
+            {instance.getState().pagination.pageIndex + 1} of{' '}
+            {instance.getPageCount()}
           </strong>{' '}
-        </span> */}
-        {/* <select
-          value={pageSize}
+        </span>
+        <select
+          value={instance.getState().pagination.pageSize}
           onChange={e => {
-            setPageSize(Number(e.target.value));
+            instance.setPageSize(Number(e.currentTarget.value));
           }}
         >
-          {[10, 20, 30, 40, 50].map(pageSize => (
-            <option key={pageSize} value={pageSize}>
-              Show {pageSize}
-            </option>
-          ))}
-        </select> */}
+          <For each={[10, 20, 30, 40, 50]}>
+            {pageSize => <option value={pageSize}>Show {pageSize}</option>}
+          </For>
+        </select>
       </div>
     </>
   );
