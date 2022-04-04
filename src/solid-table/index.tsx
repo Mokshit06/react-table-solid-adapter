@@ -1,4 +1,5 @@
 export * from '@tanstack/table-core';
+export { createCoreTable, createTableFactory };
 
 import {
   AnyGenerics,
@@ -23,7 +24,6 @@ function render<TProps extends {}>(Comp: any, props: TProps) {
 }
 
 const { createTable: createCoreTable, createTableFactory } = init({ render });
-export { createCoreTable, createTableFactory };
 
 export function createTable<TGenerics extends AnyGenerics>(
   table: Table<TGenerics>,
@@ -59,12 +59,9 @@ export function createTable<TGenerics extends AnyGenerics>(
         // Similarly, we'll maintain both our internal state and any user-provided
         // state.
         onStateChange: updater => {
-          // console.log(updater(state.initialState));
-          if (typeof updater === 'function') {
-            setState(state => ({ ...updater(state), ...options.state }));
-          } else {
-            setState({ ...updater, ...options.state });
-          }
+          // merging isn't required because stores shallow update
+          setState(updater);
+
           options.onStateChange?.(updater);
         },
       };
